@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Text, View, StyleSheet, Button, Alert } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { useNavigation } from "@react-navigation/native"; // If using React Navigation
 
 const styles = StyleSheet.create({
   container: {
@@ -45,9 +46,37 @@ const styles = StyleSheet.create({
 export default function CameraScanner() {
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraFacing, setCameraFacing] = useState<CameraType>("back");
-
   const [scanned, setScanned] = useState(false);
-  // const cameraRef = useRef(null);
+  const navigation = useNavigation();
+
+  const handleBarCodeScanned = ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
+    setScanned(true);
+    Alert.alert("Barcode Scanned!", `Type: ${type}\nData: ${data}`, [
+      { text: "Scan Again", onPress: () => setScanned(false) },
+      {
+        text: "Done",
+        onPress: () => navigation.replace("home-page", { scannedData: data }),
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      // Simulate a barcode scan in development
+      setTimeout(() => {
+        handleBarCodeScanned({
+          type: "code128",
+          data: "1234567890",
+        });
+      }, 2000);
+    }
+  }, []);
 
   if (!permission) {
     // Camera is still loading or permission is not granted
@@ -67,85 +96,36 @@ export default function CameraScanner() {
   }
 
   function toggleCameraFacing() {
-    setCameraFacing((current) => (current === "back" ? "front" : "back"));
-  }
-
-  // useEffect(() => {
-  //   const getBarCodeScannerPermissions = async () => {
-  //     const { status } = await Camera.requestCameraPermissionsAsync();
-  //     setHasPermission(status === 'granted');
-  //   };
-
-  //   getBarCodeScannerPermissions();
-  // }, []);
-
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    setScanned(true);
-    Alert.alert(
-      'Barcode Scanned!',
-      `Type: ${type}\nData: ${data}`,
-      [{ text: 'OK', onPress: () => setScanned(false) }]
+    setCameraFacing((current: string) =>
+      current === "back" ? "front" : "back"
     );
-  };
-
-  // const toggleCameraType = () => {
-  //   setCameraType(
-  //     cameraType === Camera.Constants.Type.back
-  //       ? Camera.Constants.Type.front
-  //       : Camera.Constants.Type.back
-  //   );
-  // };
-
-  const handleFakeBarCodeScanned = () => {
-    if (__DEV__) {
-    // Simulate a barcode scan in development
-    setTimeout(() => {
-      handleBarCodeScanned({
-        type: 'code128',
-        data: '1234567890',
-      });
-    }, 2000);
   }
-      
-
-  // if (hasPermission === null) {
-  //   return <Text>Requesting camera permission...</Text>;
-  // }
-
-  // if (hasPermission === false) {
-  //   return <Text>No access to camera</Text>;
-  // }
 
   return (
     <View style={styles.container}>
       <CameraView
         barcodeScannerSettings={{
-          // Todo figure out what type of barcodes we want to scan
-          barcodeTypes: ["qr", 'aztec', 'ean13', 'ean8', 'pdf417', 'upc_e',
-             'datamatrix', 'code39', 'code93', 'itf14', 'codabar', 'code128', 'upc_a'],
+          // Todo figure out what type of bar codes we want to scan
+          barcodeTypes: [
+            "qr",
+            "aztec",
+            "ean13",
+            "ean8",
+            "pdf417",
+            "upc_e",
+            "datamatrix",
+            "code39",
+            "code93",
+            "itf14",
+            "codabar",
+            "code128",
+            "upc_a",
+          ],
         }}
         // ref={cameraRef}
         style={styles.camera}
         facing={cameraFacing}
-        // onBarCodeScanned={({ type, data }) => {
-          // setScanned(true);
-        //   Alert.alert(
-        //     "Barcode Scanned!",
-        //     `Type: ${type}\nData: ${data}`,
-        //     [{ text: "OK", onPress: () => {} }]
-        //   );
-        // }}
-        // onError={(error) => {
-        //   console.error("Camera error:", error);
-        //   Alert.alert("Camera Error", "An error occurred while using the camera.");
-        // }}
-        // onMountError={(error) => {
-        //   console.error("Camera mount error:", error);
-        //   Alert.alert("Camera Mount Error", "An error occurred while mounting the camera.");
-        // }}
-        // onCameraReady={() => {
-        //   console.log("Camera is ready");
-        // }}   
+        onBarCodeScanned={handleBarCodeScanned}
       >
         <View style={styles.overlay}>
           <View style={styles.scanArea} />
@@ -155,14 +135,16 @@ export default function CameraScanner() {
         </View>
       </CameraView>
 
-      {/* <View style={styles.controls}>
-        <Button title="Flip Camera" onPress={toggleCameraType} />
+      <View style={styles.controls}>
+        <Button title="Flip Camera" onPress={toggleCameraFacing} />
+        <Button
+          title="Cancel"
+          onPress={() => navigation.replace("home-page")}
+        />
         {scanned && (
           <Button title="Tap to Scan Again" onPress={() => setScanned(false)} />
         )}
-      </View> */}
+      </View>
     </View>
   );
 }
-
-
