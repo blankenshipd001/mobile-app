@@ -1,4 +1,5 @@
 //  Evaluate this file
+import React from 'react';
 import { View, type ViewProps } from 'react-native';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
