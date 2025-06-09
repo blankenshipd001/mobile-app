@@ -14,7 +14,24 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
-const AddFunkoForm = ({ onSubmit, onCancel, initialData = null, isEditing = false }) => {
+type FunkoFormData = {
+  id: string;
+  name: string;
+  series: string;
+  number: string;
+  barcode: string;
+  image_uri: string;
+  notes: string;
+};
+
+type AddFunkoFormProps = {
+  onSubmit: (data: FunkoFormData) => Promise<any>;
+  onCancel: () => void;
+  initialData?: Partial<FunkoFormData> | null;
+  isEditing?: boolean;
+};
+
+const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initialData = {}, isEditing = false }) => {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     series: initialData?.series || '',

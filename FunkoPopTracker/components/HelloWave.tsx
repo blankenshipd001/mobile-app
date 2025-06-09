@@ -1,5 +1,6 @@
 //  Evaluate this file
-import { useEffect } from 'react';
+
+import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,

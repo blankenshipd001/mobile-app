@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, Button, Alert } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useNavigation } from "@react-navigation/native"; // If using React Navigation

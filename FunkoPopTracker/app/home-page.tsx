@@ -16,22 +16,33 @@ import { useFunkos } from '../hooks/useFunkos';
 import BarcodeScanner from '../components/BarcodeScanner';
 import AddFunkoForm from '../components/AddFunkoForm';
 
+type FunkoFormData = {
+  id: string;
+  name: string;
+  series: string;
+  number: string;
+  barcode: string;
+  image_uri: string;
+  notes: string;
+};
+
 export default function HomeScreen() {
   const { funkos, loading, addFunko, removeFunko, editFunko } = useFunkos();
   const [showScanner, setShowScanner] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingFunko, setEditingFunko] = useState(null);
+  const [editingFunko, setEditingFunko] = useState<FunkoFormData | null>(null);
   const [scannedBarcode, setScannedBarcode] = useState('');
 
-  const handleBarcodeScanned = (barcode) => {
+  const handleBarcodeScanned = (barcode: string) => {
     alert(`Scanned barcode: ${barcode}`);
     // setScannedBarcode(barcode);
     // setShowScanner(false);
     // setShowAddForm(true);
   };
 
-  const handleAddFunko = async (funkoData) => {
-    alert('Add Funko Pop', 'This feature is not implemented yet.');
+  const handleAddFunko = async (funkoData: FunkoFormData) => {
+    console.log('Adding Funko Pop:', funkoData);
+    alert('Add Funko Pop This feature is not implemented yet.');
     // const dataWithBarcode = {
     //   ...funkoData,
     //   barcode: scannedBarcode || funkoData.barcode
@@ -44,8 +55,9 @@ export default function HomeScreen() {
     // return success;
   };
 
-  const handleEditFunko = async (funkoData) => {
-    alert('Edit Funko Pop', 'This feature is not implemented yet.');
+  const handleEditFunko = async (funkoData: FunkoFormData) => {
+    console.log('Editing Funko Pop:', funkoData);
+    alert('Edit Funko Pop This feature is not implemented yet.');
     // if (!editingFunko) return false;
     // const success = await editFunko(editingFunko.id, funkoData);
     // if (success) {
@@ -54,7 +66,7 @@ export default function HomeScreen() {
     // return success;
   };
 
-  const handleDeleteFunko = (funko) => {
+  const handleDeleteFunko = (funko: FunkoFormData) => {
     Alert.alert(
       'Delete Funko Pop',
       `Are you sure you want to delete "${funko.name}"?`,
@@ -69,7 +81,7 @@ export default function HomeScreen() {
     );
   };
 
-  const startEdit = (funko) => {
+  const startEdit = (funko: FunkoFormData) => {
     setEditingFunko(funko);
   };
 
@@ -82,7 +94,7 @@ export default function HomeScreen() {
     setScannedBarcode('');
   };
 
-  const renderFunkoItem = ({ item }) => (
+  const renderFunkoItem = ({ item }: any) => (
     <View style={styles.funkoCard}>
       <View style={styles.funkoImageContainer}>
         {item.image_uri ? (
@@ -179,8 +191,8 @@ export default function HomeScreen() {
         presentationStyle="fullScreen"
       >
         <BarcodeScanner
-          onBarcodeScanned={handleBarcodeScanned}
-          onClose={() => setShowScanner(false)}
+          // onBarcodeScanned={handleBarcodeScanned}
+          // onClose={() => setShowScanner(false)}
         />
       </Modal>
 
