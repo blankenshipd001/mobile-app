@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import CameraScanner from '@/components/BarcodeScanner';
+// import CameraScanner from '@/components/BarcodeScanner';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -22,8 +22,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="home-page" />
-        {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="index" options={{title: 'Home'}}/>
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

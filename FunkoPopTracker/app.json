@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-       "infoPlist": {
+      "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to scan barcodes and take photos of your Funko Pops.",
         "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select images for your Funko Pop collection."
       }
@@ -48,6 +48,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "196f61bf-bd1f-4765-98cb-0295fa1e31d6"
+      }
     }
   }
 }

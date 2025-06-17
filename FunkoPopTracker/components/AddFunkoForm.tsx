@@ -60,10 +60,8 @@ const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initial
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
+        quality: 0.5,
       });
 
       if (!result.canceled && result.assets[0]) {

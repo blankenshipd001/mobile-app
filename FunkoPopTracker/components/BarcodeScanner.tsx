@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function CameraScanner() {
+const BarcodeScanner = ({onBarcodeScanned, onClose}) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraFacing, setCameraFacing] = useState<CameraType>("back");
   const [scanned, setScanned] = useState(false);
@@ -56,14 +56,8 @@ export default function CameraScanner() {
     type: string;
     data: string;
   }) => {
-    setScanned(true);
-    Alert.alert("Barcode Scanned!", `Type: ${type}\nData: ${data}`, [
-      { text: "Scan Again", onPress: () => setScanned(false) },
-      {
-        text: "Done",
-        onPress: () => navigation.replace("home-page", { scannedData: data }),
-      },
-    ]);
+    onBarcodeScanned({ type, data });
+    onClose();
   };
 
   useEffect(() => {
@@ -125,15 +119,15 @@ export default function CameraScanner() {
         // ref={cameraRef}
         style={styles.camera}
         facing={cameraFacing}
-        onBarCodeScanned={handleBarCodeScanned}
-      >
-        <View style={styles.overlay}>
+        onBarcodeScanned={handleBarCodeScanned}
+      />
+        {/* <View style={styles.overlay}>
           <View style={styles.scanArea} />
           <Text style={styles.instructions}>
             Point your camera at a QR code to scan
           </Text>
         </View>
-      </CameraView>
+      </CameraView> */}
 
       <View style={styles.controls}>
         <Button title="Flip Camera" onPress={toggleCameraFacing} />
@@ -148,3 +142,5 @@ export default function CameraScanner() {
     </View>
   );
 }
+
+export default BarcodeScanner;
