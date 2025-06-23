@@ -13,7 +13,9 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to scan barcodes and take photos of your Funko Pops.",
         "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select images for your Funko Pop collection."
-      }
+      },
+      "bundleIdentifier": "com.code-monkey.FunkoPopTracker",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +27,8 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
-      ]
+      ],
+      "package": "com.code-monkey.FunkoPopTracker"
     },
     "web": {
       "bundler": "metro",
@@ -43,7 +46,6 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-barcode-scanner",
       "expo-sqlite"
     ],
     "experiments": {

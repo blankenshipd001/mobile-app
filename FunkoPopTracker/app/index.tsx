@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFunkos } from '../hooks/useFunkos';
-// import BarcodeScanner from '../components/BarcodeScanner';
 import AddFunkoForm from '../components/AddFunkoForm';
 
 type FunkoFormData = {
@@ -28,27 +27,16 @@ type FunkoFormData = {
 
 export default function HomeScreen() {
   const { funkos, loading, addFunko, removeFunko, editFunko } = useFunkos();
-  // const [showScanner, setShowScanner] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingFunko, setEditingFunko] = useState<FunkoFormData | null>(null);
-  // const [scannedBarcode, setScannedBarcode] = useState('');
-
-  // const handleBarcodeScanned = (barcode: string) => {
-  //   alert(`Scanned barcode: ${barcode}`);
-  //   setScannedBarcode(barcode);
-  //   setShowScanner(false);
-  //   setShowAddForm(true);
-  // };
 
   const handleAddFunko = async (funkoData: FunkoFormData) => {
     const dataWithBarcode = {
       ...funkoData,
       barcode: funkoData.barcode
-      // barcode: scannedBarcode || funkoData.barcode
     };
     const success = await addFunko(dataWithBarcode);
     if (success) {
-      // setScannedBarcode('');
       setShowAddForm(false);
     }
     return success;
@@ -168,12 +156,6 @@ export default function HomeScreen() {
       />
 
       <View style={styles.fab}>
-        {/* <TouchableOpacity
-          style={styles.fabButton}
-          onPress={() => setShowScanner(true)}
-        >
-          <Ionicons name="scan" size={24} color="white" />
-        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.fabButton}
           onPress={() => setShowAddForm(true)}
@@ -181,17 +163,6 @@ export default function HomeScreen() {
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
-
-      {/* <Modal
-        visible={showScanner}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        <BarcodeScanner
-          onBarcodeScanned={handleBarcodeScanned}
-          onClose={() => setShowScanner(false)}
-        />
-      </Modal> */}
 
       <Modal
         visible={showAddForm}

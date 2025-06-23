@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+
+console.log(ImagePicker.launchCameraAsync);
 
 type FunkoFormData = {
   id: string;
@@ -32,6 +34,11 @@ type AddFunkoFormProps = {
 };
 
 const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initialData = {}, isEditing = false }) => {
+  const seriesRef = useRef<TextInput>(null);
+  const numberRef = useRef<TextInput>(null);
+  const barcodeRef = useRef<TextInput>(null);
+  const notesRef = useRef<TextInput>(null);
+
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     series: initialData?.series || '',
@@ -43,7 +50,11 @@ const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initial
 
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (field, value) => {
+  interface HandleInputChange {
+    (field: keyof typeof formData, value: string): void;
+  }
+
+  const handleInputChange: HandleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -68,6 +79,9 @@ const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initial
         handleInputChange('image_uri', result.assets[0].uri);
       }
     } catch (error) {
+      if (__DEV__) {
+        Alert.alert('Error', `Failed to pick image: ${error}`);
+      }
       Alert.alert('Error', 'Failed to pick image');
     }
   };
@@ -83,7 +97,6 @@ const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initial
 
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
         quality: 0.8,
       });
 
@@ -91,6 +104,9 @@ const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initial
         handleInputChange('image_uri', result.assets[0].uri);
       }
     } catch (error) {
+      if (__DEV__) {
+        Alert.alert('Error', `Failed to pick image: ${error}`);
+      }
       Alert.alert('Error', 'Failed to take photo');
     }
   };
@@ -130,112 +146,129 @@ const AddFunkoForm: React.FC<AddFunkoFormProps> = ({ onSubmit, onCancel, initial
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            {isEditing ? 'Edit Funko Pop' : 'Add New Funko Pop'}
+    style={styles.container} 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  >
+    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <Text style={styles.title}>
+          {isEditing ? 'Edit Funko Pop' : 'Add New Funko Pop'}
+        </Text>
+      </View>
+
+      <View style={styles.form}>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Name *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.name}
+            onChangeText={(value) => handleInputChange('name', value)}
+            placeholder="Enter Funko Pop name"
+            placeholderTextColor="#999"
+            returnKeyType="next"
+            onSubmitEditing={() => seriesRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Series</Text>
+          <TextInput
+            ref={seriesRef}
+            style={styles.input}
+            value={formData.series}
+            onChangeText={(value) => handleInputChange('series', value)}
+            placeholder="Enter series (e.g., Marvel, DC)"
+            placeholderTextColor="#999"
+            returnKeyType="next"
+            onSubmitEditing={() => numberRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Number</Text>
+          <TextInput
+            ref={numberRef}
+            style={styles.input}
+            value={formData.number}
+            onChangeText={(value) => handleInputChange('number', value)}
+            placeholder="Enter Funko number"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            returnKeyType="next"
+            onSubmitEditing={() => barcodeRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Barcode</Text>
+          <TextInput
+            ref={barcodeRef}
+            style={styles.input}
+            value={formData.barcode}
+            onChangeText={(value) => handleInputChange('barcode', value)}
+            placeholder="Barcode (scanned or manual)"
+            placeholderTextColor="#999"
+            editable={true}
+            returnKeyType="next"
+            onSubmitEditing={() => notesRef.current?.focus()}
+            blurOnSubmit={false}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Image</Text>
+          <TouchableOpacity style={styles.imageButton} onPress={showImageOptions}>
+            {formData.image_uri ? (
+              <Image source={{ uri: formData.image_uri }} style={styles.imagePreview} />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Ionicons name="camera" size={40} color="#666" />
+                <Text style={styles.imagePlaceholderText}>Tap to add image</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Notes</Text>
+          <TextInput
+            ref={notesRef}
+            style={[styles.input, styles.textArea]}
+            value={formData.notes}
+            onChangeText={(value) => handleInputChange('notes', value)}
+            placeholder="Additional notes..."
+            placeholderTextColor="#999"
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            returnKeyType="done"
+          />
+        </View>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.cancelButton]}
+          onPress={onCancel}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.submitButton]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <Text style={styles.submitButtonText}>
+            {loading ? 'Saving...' : (isEditing ? 'Update' : 'Add Funko')}
           </Text>
-        </View>
-
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Name *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.name}
-              onChangeText={(value) => handleInputChange('name', value)}
-              placeholder="Enter Funko Pop name"
-              placeholderTextColor="#999"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Series</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.series}
-              onChangeText={(value) => handleInputChange('series', value)}
-              placeholder="Enter series (e.g., Marvel, DC)"
-              placeholderTextColor="#999"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Number</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.number}
-              onChangeText={(value) => handleInputChange('number', value)}
-              placeholder="Enter Funko number"
-              placeholderTextColor="#999"
-              keyboardType="numeric"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Barcode</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.barcode}
-              onChangeText={(value) => handleInputChange('barcode', value)}
-              placeholder="Barcode (scanned or manual)"
-              placeholderTextColor="#999"
-              editable={false}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Image</Text>
-            <TouchableOpacity style={styles.imageButton} onPress={showImageOptions}>
-              {formData.image_uri ? (
-                <Image source={{ uri: formData.image_uri }} style={styles.imagePreview} />
-              ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Ionicons name="camera" size={40} color="#666" />
-                  <Text style={styles.imagePlaceholderText}>Tap to add image</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Notes</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={formData.notes}
-              onChangeText={(value) => handleInputChange('notes', value)}
-              placeholder="Additional notes..."
-              placeholderTextColor="#999"
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={onCancel}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.submitButton]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            <Text style={styles.submitButtonText}>
-              {loading ? 'Saving...' : (isEditing ? 'Update' : 'Add Funko')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  </KeyboardAvoidingView>
   );
 };
 
