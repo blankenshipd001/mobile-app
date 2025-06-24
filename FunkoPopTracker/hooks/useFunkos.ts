@@ -49,7 +49,6 @@ export const useFunkos = () => {
         console.error('Funko not found with ID:', id);
         return null;
       }
-      console.log('Fetched Funko:', funko);
       return funko;
     } catch (error) {
       console.error('Error fetching funko by ID:', error);

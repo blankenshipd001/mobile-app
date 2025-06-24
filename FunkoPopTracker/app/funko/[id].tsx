@@ -35,7 +35,6 @@ export default function FunkoDetailsScreen() {
     const loadFunko = async () => {
       setLoading(true);
       const data = await getFunkoById(id);
-      console.log("Fetched Funko:", data);
       if (!data) {
         Alert.alert("Not found", "Funko Pop not found.");
         router.back();
