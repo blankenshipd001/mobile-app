@@ -48,6 +48,18 @@ export const getAllFunkoPops = async () => {
   }
 };
 
+export const getFunkoPopById = async (id) => {
+  try {
+    const result = await db.getFirstAsync(
+      'SELECT * FROM funkopops WHERE id = ?',
+      [id]
+    );
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Delete Funko Pop
 export const deleteFunkoPop = async (id) => {
   try {

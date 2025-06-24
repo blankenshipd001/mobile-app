@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { initDatabase, addFunkoPop, getAllFunkoPops, deleteFunkoPop, updateFunkoPop } from '../utils/database';
+import { initDatabase, addFunkoPop, getAllFunkoPops, deleteFunkoPop, updateFunkoPop, getFunkoPopById } from '../utils/database';
+import { Funko } from '@/utils/funko';
 
 export const useFunkos = () => {
-  const [funkos, setFunkos] = useState([]);
+  const [funkos, setFunkos] = useState<Funko[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,14 +23,14 @@ export const useFunkos = () => {
 
   const loadFunkos = async () => {
     try {
-      const data = await getAllFunkoPops();
+      const data: Funko[] = await getAllFunkoPops();
       setFunkos(data);
     } catch (error) {
       console.error('Error loading funkos:', error);
     }
   };
 
-  const addFunko = async (funkoData) => {
+  const addFunko = async (funkoData: Funko): Promise<boolean> => {
     try {
       await addFunkoPop(funkoData);
       await loadFunkos(); // Refresh the list
@@ -40,7 +41,23 @@ export const useFunkos = () => {
     }
   };
 
-  const removeFunko = async (id) => {
+  //TODO this feels wrong come back to this
+  const getFunkoById = async (id: string): Promise<Funko | null> => {
+    try {
+      const funko = await getFunkoPopById(id.toString());
+      if (!funko) {
+        console.error('Funko not found with ID:', id);
+        return null;
+      }
+      console.log('Fetched Funko:', funko);
+      return funko;
+    } catch (error) {
+      console.error('Error fetching funko by ID:', error);
+      return null;
+    }
+  };
+
+  const removeFunko = async (id: string): Promise<boolean> => {
     try {
       await deleteFunkoPop(id);
       await loadFunkos(); // Refresh the list
@@ -51,7 +68,7 @@ export const useFunkos = () => {
     }
   };
 
-  const editFunko = async (id, funkoData) => {
+  const editFunko = async (id: string, funkoData: Funko): Promise<boolean> => {
     try {
       await updateFunkoPop(id, funkoData);
       await loadFunkos(); // Refresh the list
@@ -68,6 +85,7 @@ export const useFunkos = () => {
     addFunko,
     removeFunko,
     editFunko,
+    getFunkoById,
     refreshFunkos: loadFunkos
   };
 };

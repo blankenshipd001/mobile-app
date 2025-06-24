@@ -1,0 +1,33 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "Funko",
+        "Pop",
+        "Tracker",
+        "funkopoptracker",
+        "funkopop",
+        "funkopops",
+        "funkos",
+        "collectible",
+        "collection",
+        "collector",
+        "collectors",
+        "pops",
+        "funko-pops",
+        "funko-pops-tracker",
+        "barcode",
+        "camera",
+        "photo",
+        "photos",
+        "library",
+        "android",
+        "ios",
+        "expo",
+        "AUTOINCREMENT"
+    ],
+    "ignoreWords": [],
+    "import": []
+}
