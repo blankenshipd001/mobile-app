@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, StyleSheet, Button, Alert } from "react-native";
+import { Text, View, StyleSheet, Button } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useNavigation } from "@react-navigation/native"; // If using React Navigation
 
@@ -70,6 +70,7 @@ const BarcodeScanner = ({onBarcodeScanned, onClose}) => {
         });
       }, 2000);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!permission) {

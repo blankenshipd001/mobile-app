@@ -8,9 +8,17 @@ export const useFunkos = () => {
 
   useEffect(() => {
     initDB();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const initDB = async () => {
+  /**
+   * Initializes the database and loads the Funko Pops.
+   * This function is called once when the component mounts.
+   * It sets up the database and fetches all Funko Pops to display.
+   * @returns {Promise<void>} A promise that resolves when the database is initialized and Funko Pops are loaded.
+   * @throws {Error} If there is an error during database initialization or loading Funkos.
+   */
+  const initDB = async (): Promise<void> => {
     try {
       await initDatabase();
       await loadFunkos();
@@ -21,7 +29,14 @@ export const useFunkos = () => {
     }
   };
 
-  const loadFunkos = async () => {
+  /**
+   * Loads all Funko Pops from the database.
+   * This function fetches all Funko Pops and updates the state.
+   * It is called after the database is initialized to populate the initial list of Funkos.
+   * @returns {Promise<void>} A promise that resolves when the Funkos are loaded.
+   * @throws {Error} If there is an error while fetching Funkos from the database
+   */
+  const loadFunkos = async (): Promise<void> => {
     try {
       const data: Funko[] = await getAllFunkoPops();
       setFunkos(data);
@@ -30,6 +45,12 @@ export const useFunkos = () => {
     }
   };
 
+  /**
+   * Adds a new Funko Pop to the database.
+   * This function takes Funko data as input, adds it to the database, and refreshes the list of Funkos.
+   * @param {Funko} funkoData - The Funko data to be added.
+   * @returns {Promise<boolean>} A promise that resolves to true if the Funko was added successfully, false otherwise.
+   */
   const addFunko = async (funkoData: Funko): Promise<boolean> => {
     try {
       await addFunkoPop(funkoData);
@@ -41,7 +62,18 @@ export const useFunkos = () => {
     }
   };
 
-  //TODO this feels wrong come back to this
+  /**
+   * Get a specific Funko Pop by its ID.
+   * This function retrieves a Funko Pop from the database using its ID.
+   * It returns the Funko object if found, or null if not found.  
+   * 
+   * @param id - The ID of the Funko Pop to retrieve.
+   * This function fetches a Funko Pop by its ID from the database.
+   * If the Funko Pop is found, it returns the Funko object; otherwise,
+   * it returns null.
+   * @returns {Promise<Funko | null>} A promise that resolves to the Funko Pop object if found, or null if not found.
+   * @throws {Error} If there is an error while fetching the Funko Pop by
+   */
   const getFunkoById = async (id: string): Promise<Funko | null> => {
     try {
       const funko = await getFunkoPopById(id.toString());
@@ -56,6 +88,13 @@ export const useFunkos = () => {
     }
   };
 
+  /**
+   * Removes a Funko Pop from the database.
+   * This function deletes a Funko Pop by its ID and refreshes the list of Funkos.
+   * @param {string} id - The ID of the Funko Pop to be removed.
+   * @returns {Promise<boolean>} A promise that resolves to true if the Funko was removed successfully, false otherwise.
+   * @throws {Error} If there is an error while deleting the Funko Pop from the database 
+   */
   const removeFunko = async (id: string): Promise<boolean> => {
     try {
       await deleteFunkoPop(id);
@@ -67,6 +106,17 @@ export const useFunkos = () => {
     }
   };
 
+  /**
+   * Edits an existing Funko Pop in the database.
+   * This function updates an existing Funko Pop in the database.
+   * It takes the Funko Pop ID and the updated Funko data as input,
+   * updates the Funko Pop in the database, and refreshes the list of Funkos.
+   * 
+   * @param id - The ID of the Funko Pop to be edited.
+   * @param {Funko} funkoData - The updated Funko data to be saved.
+   * @returns {Promise<boolean>} A promise that resolves to true if the Funko was edited successfully, false otherwise.
+   * @throws {Error} If there is an error while updating the Funko Pop in the database
+   */
   const editFunko = async (id: string, funkoData: Funko): Promise<boolean> => {
     try {
       await updateFunkoPop(id, funkoData);

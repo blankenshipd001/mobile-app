@@ -5,12 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
   Alert,
   Modal,
   SafeAreaView,
   StatusBar,
   TextInput,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
@@ -18,16 +18,17 @@ import { useRouter } from "expo-router";
 import { useFunkos } from "../hooks/useFunkos";
 import { Funko } from "@/utils/funko";
 import AddFunkoForm from "../components/AddFunkoForm";
+import { FunkoItem } from "../components/FunkoItem";
+import { HomePageHeader } from "@/components/HomePageHeader";
 
 export default function HomeScreen() {
-  const { colors } = useTheme();
+  const { colors, dark } = useTheme();
   const { funkos, loading, addFunko, removeFunko, editFunko } = useFunkos();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingFunko, setEditingFunko] = useState<Funko | null>(null);
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
-  // Filtered list using name or number
   const filteredFunkos = funkos.filter(
     (f) =>
       (typeof f.name === "string" &&
@@ -36,31 +37,15 @@ export default function HomeScreen() {
   );
 
   const handleAddFunko = async (funkoData: Funko) => {
-    const dataWithBarcode = {
-      ...funkoData,
-      barcode: funkoData.barcode,
-    };
-    
-    const success = await addFunko(dataWithBarcode);
-
-    if (success) {
-      setShowAddForm(false);
-    }
-    
+    const success = await addFunko(funkoData);
+    if (success) setShowAddForm(false);
     return success;
   };
 
   const handleEditFunko = async (funkoData: Funko) => {
-    if (!editingFunko || !editingFunko.id) {
-      return false;
-    }
-
+    if (!editingFunko?.id) return false;
     const success = await editFunko(editingFunko.id, funkoData);
-    
-    if (success) {
-      setEditingFunko(null);
-    }
-    
+    if (success) setEditingFunko(null);
     return success;
   };
 
@@ -79,70 +64,17 @@ export default function HomeScreen() {
     );
   };
 
-  const startEdit = (funko: Funko) => {
-    setEditingFunko(funko);
-  };
-
-  const cancelEdit = () => {
-    setEditingFunko(null);
-  };
-
-  const cancelAdd = () => {
-    setShowAddForm(false);
-  };
-
   const renderFunkoItem = ({ item }: any) => (
-    <TouchableOpacity
-      onPress={() => router.push(`/funko/${item.id}`)}
-      activeOpacity={0.8}
-    >
-      <View style={styles.funkoCard}>
-        <View style={styles.funkoImageContainer}>
-          {item.image_uri ? (
-            <Image source={{ uri: item.image_uri }} style={styles.funkoImage} />
-          ) : (
-            <View style={styles.noImage}>
-              <Ionicons name="image-outline" size={40} color="#999" />
-            </View>
-          )}
-        </View>
-
-        <View style={styles.funkoInfo}>
-          <Text style={styles.funkoName}>{item.name}</Text>
-          {item.series && <Text style={styles.funkoSeries}>{item.series}</Text>}
-          {item.number && (
-            <Text style={styles.funkoNumber}>#{item.number}</Text>
-          )}
-          {item.notes && (
-            <Text style={styles.funkoNotes} numberOfLines={2}>
-              {item.notes}
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.funkoActions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => startEdit(item)}
-          >
-            <Ionicons name="pencil" size={20} color="#007AFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleDeleteFunko(item)}
-          >
-            <Ionicons name="trash" size={20} color="#FF3333" />
-          </TouchableOpacity>
-        </View>
-      </View>
+    <TouchableOpacity onPress={() => router.push(`/funko/${item.id}`)} activeOpacity={0.8}>
+      <FunkoItem item={item} onEdit={() => setEditingFunko(item)} onDelete={() => handleDeleteFunko(item)}/>
     </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="cube-outline" size={80} color="#ccc" />
-      <Text style={styles.emptyStateText}>No Funko Pops yet!</Text>
-      <Text style={styles.emptyStateSubtext}>
+      <Ionicons name="cube-outline" size={80} color={colors.border} />
+      <Text style={[styles.emptyStateText, { color: colors.text }]}>No Funko Pops yet!</Text>
+      <Text style={[styles.emptyStateSubtext, { color: colors.text + "AA" }]}>
         Scan a barcode or add one manually to get started
       </Text>
     </View>
@@ -150,23 +82,19 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading your collection...</Text>
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading your collection...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      {/* <StatusBar style={colors.text === '#fff' ? 'light' : 'dark'} /> */}
-      <StatusBar barStyle="light-content" backgroundColor="#007AFF" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={dark ? "light-content" : "dark-content"} backgroundColor={colors.primary} />
 
-      {/* Search Input */}
-      <View style={[styles.searchContainer, { borderColor: colors.border }]}>
+      <View style={[styles.searchContainer, { backgroundColor: dark ? "#1e1e1e" : "#fff", borderColor: colors.border }]}>
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search by name or number"
@@ -177,15 +105,7 @@ export default function HomeScreen() {
         <Ionicons name="search" size={20} color={colors.text} />
       </View>
 
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={[styles.headerTitle, { color: colors.background }]}>
-          My Funko Collection
-        </Text>
-        <Text style={[styles.headerSubtitle, { color: colors.background }]}>
-          {filteredFunkos.length}{" "}
-          {filteredFunkos.length === 1 ? "item" : "items"}
-        </Text>
-      </View>
+      <HomePageHeader count={filteredFunkos.length} />
 
       <FlatList
         data={filteredFunkos}
@@ -199,36 +119,21 @@ export default function HomeScreen() {
       />
 
       <View style={styles.fab}>
-        <TouchableOpacity
-          style={styles.fabButton}
-          onPress={() => setShowAddForm(true)}
-        >
+        <TouchableOpacity style={[styles.fabButton, { backgroundColor: colors.primary}]} onPress={() => setShowAddForm(true)}>
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
 
-      <Modal
-        visible={showAddForm}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        <AddFunkoForm
-          onSubmit={handleAddFunko}
-          onCancel={cancelAdd}
-          initialData={{ barcode: "" }}
-        />
+      <Modal visible={showAddForm} animationType="slide" presentationStyle="fullScreen">
+        <AddFunkoForm onSubmit={handleAddFunko} onCancel={() => setShowAddForm(false)} initialData={{ barcode: "" }} />
       </Modal>
 
-      <Modal
-        visible={!!editingFunko}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
+      <Modal visible={!!editingFunko} animationType="slide" presentationStyle="fullScreen">
         <AddFunkoForm
           onSubmit={handleEditFunko}
-          onCancel={cancelEdit}
+          onCancel={() => setEditingFunko(null)}
           initialData={editingFunko}
-          isEditing={true}
+          isEditing
         />
       </Modal>
     </SafeAreaView>
@@ -238,7 +143,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
   },
   loadingContainer: {
     flex: 1,
@@ -247,24 +151,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    color: "#666",
-  },
-  header: {
-    backgroundColor: "#007AFF",
-    padding: 20,
-    paddingBottom: 30,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "white",
-    textAlign: "center",
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "rgba(255,255,255,0.8)",
-    textAlign: "center",
-    marginTop: 5,
   },
   listContainer: {
     padding: 15,
@@ -283,106 +169,30 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
     marginTop: 20,
     textAlign: "center",
   },
   emptyStateSubtext: {
     fontSize: 16,
-    color: "#666",
     marginTop: 10,
     textAlign: "center",
     lineHeight: 22,
-  },
-  funkoCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  funkoImageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    overflow: "hidden",
-    marginRight: 15,
-  },
-  funkoImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  noImage: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#f8f9fa",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  funkoInfo: {
-    flex: 1,
-    paddingRight: 10,
-  },
-  funkoName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 4,
-  },
-  funkoSeries: {
-    fontSize: 14,
-    color: "#007AFF",
-    marginBottom: 2,
-  },
-  funkoNumber: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
-  },
-  funkoNotes: {
-    fontSize: 12,
-    color: "#999",
-    fontStyle: "italic",
-  },
-  funkoActions: {
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  actionButton: {
-    padding: 8,
-    marginVertical: 2,
   },
   fab: {
     position: "absolute",
     bottom: 30,
     right: 20,
-    flexDirection: "column",
   },
   fabButton: {
-    backgroundColor: "#007AFF",
     width: 56,
     height: 56,
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 15,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 4,
     elevation: 5,
   },
   searchContainer: {
@@ -395,12 +205,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderWidth: 1,
     borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.9)", // will be overridden with theme
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     marginRight: 8,
-    paddingVertical: 4,
+    paddingVertical: Platform.OS === "ios" ? 6 : 2,
   },
 });
