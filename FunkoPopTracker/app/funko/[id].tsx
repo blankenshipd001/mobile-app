@@ -28,7 +28,7 @@ export default function FunkoDetailsScreen() {
   const { getFunkoById, removeFunko, editFunko } = useFunkos();
   const router = useRouter();
   const navigation = useNavigation();
-  const { colors } = useTheme();
+  const { dark, colors } = useTheme();
 
   const [funko, setFunko] = useState<Funko | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -56,17 +56,21 @@ export default function FunkoDetailsScreen() {
 
   const handleEdit = () => setShowEditModal(true);
   const handleCancelEdit = () => setShowEditModal(false);
-  const handleUpdate = (updatedFunko: Funko) => {
-    if (!updatedFunko.id) return;
+
+  const handleUpdate = async (updatedFunko: Funko) => {
+    if (!updatedFunko.id) { 
+      return Promise.reject(new Error("Missing Funko ID")); 
+    }
+    
     try {
-      editFunko(updatedFunko.id, updatedFunko);
+      await editFunko(updatedFunko.id, updatedFunko);
       setFunko(updatedFunko);
+      setShowEditModal(false);
+      return true;
     } catch (error) {
       console.error("Error updating Funko:", error);
-      return false;
+      return Promise.reject(error);
     }
-    setShowEditModal(false);
-    return true;
   };
 
   const handleDelete = () => {
@@ -127,8 +131,8 @@ export default function FunkoDetailsScreen() {
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Ionicons name="trash" size={20} color="#fff" />
+        <TouchableOpacity style={dark ? styles.darkDeleteButton : styles.deleteButton} onPress={handleDelete}>
+          <Ionicons name="trash" size={20} color={"#fff"} />
           <Text style={styles.editButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
@@ -214,6 +218,15 @@ const createStyles = (colors: any) =>
     editButton: {
       flexDirection: "row",
       backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 10,
+      alignItems: "center",
+      gap: 8,
+    },
+    darkDeleteButton: {
+      flexDirection: "row",
+      backgroundColor: "#FF4C4C",
       paddingHorizontal: 20,
       paddingVertical: 10,
       borderRadius: 10,

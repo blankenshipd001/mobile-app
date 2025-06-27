@@ -27,7 +27,6 @@ export const initDatabase = async () => {
     const columnNames = columns.map((col) => col.name);
 
     if (!columnNames.includes("purchase_price")) {
-      console.log("Adding purchase_price column to funkopops table");
       await db.execAsync(`ALTER TABLE funkopops ADD COLUMN purchase_price TEXT;`);
     }
   } catch (error) {
@@ -92,7 +91,6 @@ export const getFunkoPopById = async (id) => {
       "SELECT * FROM funkopops WHERE id = ?",
       [id]
     );
-    console.log('result: ', result)
     return result;
   } catch (error) {
     throw error;
@@ -124,7 +122,6 @@ export const deleteFunkoPop = async (id) => {
  * @throws {Error} If the update fails
  */
 export const updateFunkoPop = async (id, funko) => {
-  console.log('funk: ', funko)
   try {
     const result = await db.runAsync(
       `UPDATE funkopops 

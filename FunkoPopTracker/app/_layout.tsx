@@ -1,13 +1,13 @@
 import React from "react";
-import {
-  ThemeProvider,
-} from "@react-navigation/native";
+import { ThemeProvider } from "@react-navigation/native";
 import "react-native-reanimated";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { MyDarkTheme, MyLightTheme } from "@/utils/theme";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { OptionsProvider } from "../context/OptionsContext";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -21,18 +21,29 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? MyDarkTheme : MyLightTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ title: "Home" }} />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen
-          name="[id]"
-          options={({route}: { route: { params?: { name?: string } }; }) => ({
-            title: route.params?.name || "Details",
-          })}
-        />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <ActionSheetProvider>
+      <OptionsProvider>
+        {/* TODO Make sure we reset this to dark */}
+        <ThemeProvider
+          value={colorScheme === "dark" ? MyDarkTheme : MyLightTheme}
+        >
+          <Stack>
+            <Stack.Screen name="index" options={{ title: "Home" }} />
+            <Stack.Screen name="+not-found" />
+            <Stack.Screen
+              name="[id]"
+              options={({
+                route,
+              }: {
+                route: { params?: { name?: string } };
+              }) => ({
+                title: route.params?.name || "Details",
+              })}
+            />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </OptionsProvider>
+    </ActionSheetProvider>
   );
 }

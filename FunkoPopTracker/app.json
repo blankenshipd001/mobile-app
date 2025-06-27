@@ -46,7 +46,9 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-secure-store",
+      "expo-barcode-scanner"
     ],
     "experiments": {
       "typedRoutes": true
