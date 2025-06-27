@@ -15,7 +15,7 @@ import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useFunkos } from "../hooks/useFunkos";
 import { Funko } from "@/utils/funko";
-import { AddFunkoForm } from "../components/AddFunkoForm";
+import AddFunkoForm from "../components/AddFunkoForm";
 import { FunkoItem } from "../components/FunkoItem";
 import { useOptions } from "../context/OptionsContext";
 import { HomePageHeader } from "@/components/HomePageHeader";

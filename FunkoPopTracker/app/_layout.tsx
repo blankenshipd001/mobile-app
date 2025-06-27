@@ -25,7 +25,7 @@ export default function RootLayout() {
       <OptionsProvider>
         {/* TODO Make sure we reset this to dark */}
         <ThemeProvider
-          value={colorScheme === "dark" ? MyDarkTheme : MyLightTheme}
+          value={colorScheme === "light" ? MyDarkTheme : MyLightTheme}
         >
           <Stack>
             <Stack.Screen name="index" options={{ title: "Home" }} />

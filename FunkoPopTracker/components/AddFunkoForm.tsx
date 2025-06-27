@@ -23,7 +23,7 @@ type AddFunkoFormProps = {
   isEditing?: boolean;
 };
 
-export const AddFunkoForm: React.FC<AddFunkoFormProps> = ({
+const AddFunkoForm: React.FC<AddFunkoFormProps> = ({
   onSubmit,
   onCancel,
   initialData = {},
@@ -308,3 +308,4 @@ const createStyles = (colors: any) =>
     },
   });
 
+export default AddFunkoForm;
