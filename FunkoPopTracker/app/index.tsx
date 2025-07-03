@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -23,14 +23,25 @@ import { SearchBox } from "@/components/SearchBox";
 
 export default function HomeScreen() {
   const { colors, dark } = useTheme();
-  const { funkos, loading, addFunko, removeFunko, editFunko } = useFunkos();
-  const [showAddForm, setShowAddForm] = useState(false);
+  const { funkos, loading, addFunko, removeFunko, editFunko, refresh, refreshing } = useFunkos();
   const [editingFunko, setEditingFunko] = useState<Funko | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedSeries, setExpandedSeries] = useState<string[]>([]);
+  const [showFabOptions, setShowFabOptions] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [refreshNeeded, setRefreshNeeded] = useState(false);
   const router = useRouter();
   const { options, loading: optionsLoading } = useOptions();
 
+  // Effect: refresh when modal closes if needed
+  useEffect(() => {
+    if (editingFunko === null && refreshNeeded) {
+      refresh();
+      setRefreshNeeded(false);
+    }
+  }, [editingFunko, refreshNeeded, refresh]);
+
+  // Filter & sort
   const filteredFunkos = funkos
     .filter(
       (f) =>
@@ -47,9 +58,10 @@ export default function HomeScreen() {
       return 0;
     });
 
-  // Group and sort series alphabetically
+  // Group by series
   const groupedBySeries = filteredFunkos.reduce((acc, funko) => {
-    const seriesKey = funko.series ?? "Unknown";
+    const seriesKey =
+      funko.series && funko.series.trim() !== "" ? funko.series : "Unknown";
     if (!acc[seriesKey]) acc[seriesKey] = [];
     acc[seriesKey].push(funko);
     return acc;
@@ -68,14 +80,21 @@ export default function HomeScreen() {
 
   const handleAddFunko = async (funkoData: Funko) => {
     const success = await addFunko(funkoData);
-    if (success) setShowAddForm(false);
+    if (success) {
+      setShowAddForm(false);
+      setShowFabOptions(false);
+      setRefreshNeeded(true);
+    }
     return success;
   };
 
   const handleEditFunko = async (funkoData: Funko) => {
     if (!editingFunko?.id) return false;
     const success = await editFunko(editingFunko.id, funkoData);
-    if (success) setEditingFunko(null);
+    if (success) {
+      setEditingFunko(null);  // triggers effect to refresh
+      setRefreshNeeded(true);
+    }
     return success;
   };
 
@@ -88,7 +107,10 @@ export default function HomeScreen() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => removeFunko(funko.id),
+          onPress: async () => {
+            await removeFunko(funko.id);
+            refresh(); // immediate refresh after delete
+          },
         },
       ]
     );
@@ -108,9 +130,7 @@ export default function HomeScreen() {
 
   if (loading || optionsLoading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: colors.text }]}>
             Loading your collection...
@@ -121,9 +141,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
         barStyle={dark ? "light-content" : "dark-content"}
         backgroundColor={colors.primary}
@@ -133,6 +151,8 @@ export default function HomeScreen() {
 
       {options.groupBySeries ? (
         <FlatList
+          refreshing={refreshing}
+          onRefresh={refresh}
           data={groupedSeriesArray}
           keyExtractor={([series]) => series}
           renderItem={({ item: [series, items] }) => (
@@ -152,21 +172,11 @@ export default function HomeScreen() {
                   marginBottom: 8,
                 }}
               >
-                <Text
-                  style={{
-                    color: colors.text,
-                    fontSize: 16,
-                    fontWeight: "bold",
-                  }}
-                >
+                <Text style={{ color: colors.text, fontSize: 16, fontWeight: "bold" }}>
                   {series}
                 </Text>
                 <Ionicons
-                  name={
-                    expandedSeries.includes(series)
-                      ? "chevron-up"
-                      : "chevron-down"
-                  }
+                  name={expandedSeries.includes(series) ? "chevron-up" : "chevron-down"}
                   size={18}
                   color={colors.text}
                 />
@@ -196,9 +206,7 @@ export default function HomeScreen() {
             </View>
           )}
           contentContainerStyle={
-            funkos.length === 0
-              ? styles.emptyListContainer
-              : styles.listContainer
+            funkos.length === 0 ? styles.emptyListContainer : styles.listContainer
           }
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyState}
@@ -221,28 +229,52 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
           contentContainerStyle={
-            funkos.length === 0
-              ? styles.emptyListContainer
-              : styles.listContainer
+            funkos.length === 0 ? styles.emptyListContainer : styles.listContainer
           }
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyState}
         />
       )}
 
-      <View style={styles.fab}>
+      {/* FAB options */}
+      <View style={styles.fabContainer}>
+        {showFabOptions && (
+          <>
+            <TouchableOpacity
+              style={[styles.fabOptionButton, { backgroundColor: colors.primary }]}
+              onPress={() => {
+                setShowFabOptions(false);
+                setEditingFunko(null);
+                setShowAddForm(true);
+              }}
+            >
+              <Ionicons name="create-outline" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.fabOptionButton, { backgroundColor: colors.primary }]}
+              onPress={() => {
+                setShowFabOptions(false);
+                router.push("/scan-barcode");
+              }}
+            >
+              <Ionicons name="barcode-outline" size={24} color="white" />
+            </TouchableOpacity>
+          </>
+        )}
         <TouchableOpacity
           style={[styles.fabButton, { backgroundColor: colors.primary }]}
-          onPress={() => setShowAddForm(true)}
+          onPress={() => setShowFabOptions((prev) => !prev)}
         >
-          <Ionicons name="add" size={24} color="white" />
+          <Ionicons name={showFabOptions ? "close" : "add"} size={28} color="white" />
         </TouchableOpacity>
       </View>
 
+      {/* Add Modal */}
       <Modal
         visible={showAddForm}
         animationType="slide"
         presentationStyle="fullScreen"
+        onRequestClose={() => setShowAddForm(false)}
       >
         <AddFunkoForm
           onSubmit={handleAddFunko}
@@ -251,10 +283,12 @@ export default function HomeScreen() {
         />
       </Modal>
 
+      {/* Edit Modal */}
       <Modal
         visible={!!editingFunko}
         animationType="slide"
         presentationStyle="fullScreen"
+        onRequestClose={() => setEditingFunko(null)}
       >
         <AddFunkoForm
           onSubmit={handleEditFunko}
@@ -267,7 +301,6 @@ export default function HomeScreen() {
   );
 }
 
-// styles unchanged
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
@@ -292,13 +325,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
   },
-  fab: { position: "absolute", bottom: 30, right: 20 },
+  fabContainer: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    alignItems: "center",
+  },
   fabButton: {
     width: 56,
     height: 56,
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  fabOptionButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

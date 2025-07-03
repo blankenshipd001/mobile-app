@@ -1,14 +1,22 @@
-import { useState, useEffect } from 'react';
-import { initDatabase, addFunkoPop, getAllFunkoPops, deleteFunkoPop, updateFunkoPop, getFunkoPopById } from '../utils/database';
-import { Funko } from '@/utils/funko';
+import { useState, useEffect } from "react";
+import {
+  initDatabase,
+  addFunkoPop,
+  getAllFunkoPops,
+  deleteFunkoPop,
+  updateFunkoPop,
+  getFunkoPopById,
+} from "../utils/database";
+import { Funko } from "@/utils/funko";
 
 export const useFunkos = () => {
   const [funkos, setFunkos] = useState<Funko[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     initDB();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -23,7 +31,7 @@ export const useFunkos = () => {
       await initDatabase();
       await loadFunkos();
     } catch (error) {
-      console.error('Database initialization error:', error);
+      console.error("Database initialization error:", error);
     } finally {
       setLoading(false);
     }
@@ -41,7 +49,25 @@ export const useFunkos = () => {
       const data: Funko[] = await getAllFunkoPops();
       setFunkos(data);
     } catch (error) {
-      console.error('Error loading funkos:', error);
+      console.error("Error loading funkos:", error);
+    }
+  };
+
+  /**
+   * Refreshes the list of Funkos.
+   * This function is used to reload the Funkos from the database.
+   * It can be called when the user pulls to refresh or when needed.
+   * @returns {Promise<void>} A promise that resolves when the Funkos are refreshed.
+   * @throws {Error} If there is an error while refreshing Funkos from the database
+   */
+  const refresh = async (): Promise<void> => {
+    try {
+      setRefreshing(true);
+      await loadFunkos();
+    } catch (error) {
+      console.error('Error refreshing funkos:', error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -53,11 +79,12 @@ export const useFunkos = () => {
    */
   const addFunko = async (funkoData: Funko): Promise<boolean> => {
     try {
+      setFunkos((prev) => [...prev, funkoData]); // optimistic update
       await addFunkoPop(funkoData);
-      await loadFunkos(); // Refresh the list
       return true;
     } catch (error) {
-      console.error('Error adding funko:', error);
+      console.error("Error adding funko:", error);
+      await loadFunkos(); // rollback by reloading
       return false;
     }
   };
@@ -65,8 +92,8 @@ export const useFunkos = () => {
   /**
    * Get a specific Funko Pop by its ID.
    * This function retrieves a Funko Pop from the database using its ID.
-   * It returns the Funko object if found, or null if not found.  
-   * 
+   * It returns the Funko object if found, or null if not found.
+   *
    * @param id - The ID of the Funko Pop to retrieve.
    * This function fetches a Funko Pop by its ID from the database.
    * If the Funko Pop is found, it returns the Funko object; otherwise,
@@ -78,12 +105,12 @@ export const useFunkos = () => {
     try {
       const funko = await getFunkoPopById(id.toString());
       if (!funko) {
-        console.error('Funko not found with ID:', id);
+        console.error("Funko not found with ID:", id);
         return null;
       }
       return funko;
     } catch (error) {
-      console.error('Error fetching funko by ID:', error);
+      console.error("Error fetching funko by ID:", error);
       return null;
     }
   };
@@ -93,7 +120,7 @@ export const useFunkos = () => {
    * This function deletes a Funko Pop by its ID and refreshes the list of Funkos.
    * @param {string} id - The ID of the Funko Pop to be removed.
    * @returns {Promise<boolean>} A promise that resolves to true if the Funko was removed successfully, false otherwise.
-   * @throws {Error} If there is an error while deleting the Funko Pop from the database 
+   * @throws {Error} If there is an error while deleting the Funko Pop from the database
    */
   const removeFunko = async (id: string): Promise<boolean> => {
     try {
@@ -101,7 +128,7 @@ export const useFunkos = () => {
       await loadFunkos(); // Refresh the list
       return true;
     } catch (error) {
-      console.error('Error deleting funko:', error);
+      console.error("Error deleting funko:", error);
       return false;
     }
   };
@@ -111,7 +138,7 @@ export const useFunkos = () => {
    * This function updates an existing Funko Pop in the database.
    * It takes the Funko Pop ID and the updated Funko data as input,
    * updates the Funko Pop in the database, and refreshes the list of Funkos.
-   * 
+   *
    * @param id - The ID of the Funko Pop to be edited.
    * @param {Funko} funkoData - The updated Funko data to be saved.
    * @returns {Promise<boolean>} A promise that resolves to true if the Funko was edited successfully, false otherwise.
@@ -123,7 +150,7 @@ export const useFunkos = () => {
       await loadFunkos(); // Refresh the list
       return true;
     } catch (error) {
-      console.error('Error updating funko:', error);
+      console.error("Error updating funko:", error);
       return false;
     }
   };
@@ -131,10 +158,12 @@ export const useFunkos = () => {
   return {
     funkos,
     loading,
+    refresh,
+    refreshing,
     addFunko,
     removeFunko,
     editFunko,
     getFunkoById,
-    refreshFunkos: loadFunkos
+    refreshFunkos: loadFunkos,
   };
 };

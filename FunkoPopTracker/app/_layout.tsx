@@ -8,6 +8,7 @@ import { MyDarkTheme, MyLightTheme } from "@/utils/theme";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { OptionsProvider } from "../context/OptionsContext";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -21,29 +22,32 @@ export default function RootLayout() {
   }
 
   return (
-    <ActionSheetProvider>
-      <OptionsProvider>
-        {/* TODO Make sure we reset this to dark */}
-        <ThemeProvider
-          value={colorScheme === "light" ? MyDarkTheme : MyLightTheme}
-        >
-          <Stack>
-            <Stack.Screen name="index" options={{ title: "Home" }} />
-            <Stack.Screen name="+not-found" />
-            <Stack.Screen
-              name="[id]"
-              options={({
-                route,
-              }: {
-                route: { params?: { name?: string } };
-              }) => ({
-                title: route.params?.name || "Details",
-              })}
-            />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </OptionsProvider>
-    </ActionSheetProvider>
+    <>
+      <ThemeProvider
+        value={colorScheme === "dark" ? MyDarkTheme : MyLightTheme}
+      >
+        <ActionSheetProvider>
+          <OptionsProvider>
+            <Stack>
+              <Stack.Screen name="index" options={{ title: "Home" }} />
+              <Stack.Screen name="+not-found" />
+              <Stack.Screen
+                name="[id]"
+                options={({
+                  route,
+                }: {
+                  route: { params?: { name?: string } };
+                }) => ({
+                  title: route.params?.name || "Details",
+                })}
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </OptionsProvider>
+        </ActionSheetProvider>
+
+        <Toast />
+      </ThemeProvider>
+    </>
   );
 }
