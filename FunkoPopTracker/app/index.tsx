@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useFunkos } from "../hooks/useFunkos";
 import { Funko } from "@/utils/funko";
 import AddFunkoForm from "../components/AddFunkoForm";
@@ -39,7 +40,13 @@ export default function HomeScreen() {
       refresh();
       setRefreshNeeded(false);
     }
-  }, [editingFunko, refreshNeeded, refresh]);
+  }, [editingFunko, refreshNeeded]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refresh();
+    }, [])
+  );
 
   // Filter & sort
   const filteredFunkos = funkos

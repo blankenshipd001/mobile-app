@@ -50,7 +50,9 @@ export default function FunkoDetailsScreen() {
       setLoading(false);
     };
 
-    if (id) loadFunko();
+    if (id) {
+      loadFunko();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
